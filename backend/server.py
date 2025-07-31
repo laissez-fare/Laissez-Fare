@@ -100,8 +100,25 @@ async def create_ride(ride_data: CreateRideRequest):
         "agreed_driver_name": None
     }
     
-    await db.rides.insert_one(ride)
-    return {"message": "Ride request created", "ride_id": ride_id, "ride": ride}
+    result = await db.rides.insert_one(ride)
+    
+    # Create clean response without MongoDB ObjectId
+    clean_ride = {
+        "id": ride_id,
+        "rider_id": ride["rider_id"],
+        "rider_name": ride["rider_name"],
+        "rider_phone": ride["rider_phone"],
+        "origin": ride["origin"],
+        "destination": ride["destination"],
+        "initial_price": ride["initial_price"],
+        "current_price": ride["current_price"],
+        "status": ride["status"],
+        "created_at": ride["created_at"].isoformat(),
+        "agreed_driver_id": ride["agreed_driver_id"],
+        "agreed_driver_name": ride["agreed_driver_name"]
+    }
+    
+    return {"message": "Ride request created", "ride_id": ride_id, "ride": clean_ride}
 
 @app.get("/api/rides")
 async def get_available_rides():
